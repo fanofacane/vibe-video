@@ -1,0 +1,12 @@
+{
+  "name": "love-100-ways",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "学会爱的一百种笨办法: a hand-painted Clawd short film",
+  "dependencies": {
+    "p5": "^2.3.3",
+    "p5.brush": "^2.2.3",
+    "puppeteer-core": "^25.11.0"
+  }
+}
