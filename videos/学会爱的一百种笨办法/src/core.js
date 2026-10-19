@@ -98,7 +98,18 @@ function starPts(cx, cy, r, inner = .38, n = 4, rot = -Math.PI / 2) {
 
 // ---------- paint wrapper ----------
 // One call = one painted shape: optional flat wash, optional watercolor fill, optional hatch, optional ink outline.
+// Watercolor fills cost time in proportion to their area (about 4 s for a full-frame one without a GPU), so large
+// fills are swapped for flat translucent washes; the paper grain still gives them texture.
+const FILL_MAX = 260000;
 function paint(pts, o = {}) {
+  if (o.fill) {
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const p of pts) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }
+    const z = CAM ? CAM.zoom : 1;
+    if ((x1 - x0) * (y1 - y0) * z * z > FILL_MAX) {
+      if (o.wash) o = { ...o, fill: null };
+      else o = { ...o, wash: o.fill, washOp: (o.fillOp ?? 170) * .5, fill: null };
+    }
+  }
   if (o.wash || o.fill || o.hatch) {
     if (o.wash) brush.wash(o.wash, o.washOp ?? 255); else brush.noWash();
     if (o.fill) { brush.fill(o.fill, o.fillOp ?? 170); brush.fillBleed(o.bleed ?? .1); brush.fillTexture(o.tex ?? .4, o.border ?? .35); } else brush.noFill();

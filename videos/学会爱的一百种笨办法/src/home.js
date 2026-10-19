@@ -13,11 +13,15 @@ const WOOD = '#C89566', WOOD_DK = '#9A6A45', STEEL = '#D9DCE0', STEEL_DK = '#A9A
 const GY = 900;   // floor line in room shots
 
 // ---------- small shared bits ----------
+// A soft round glow faked with stacked translucent washes (cheap, no watercolor fill).
+function softGlow(x, y, rx, ry, col, op = 120, n = 4) {
+  for (let i = 0; i < n; i++) { const k = 1 - i / n; paint(ellPts(x, y, rx * k, ry * k, 24), { wash: col, washOp: op / n, ink: null }); }
+}
+
 // Orange halo + little signal arcs: "Clawd is controlling this".
 function ctrlGlow(x, y, rx, ry, k = 1) {
   if (k < .02) return;
-  paint(ellPts(x, y, rx * 1.25, ry * 1.25, 26, rx * .03), { wash: GLOW, washOp: 38 * k, fill: GLOW, fillOp: 70 * k, bleed: .3, tex: .3, border: .2, ink: null });
-  paint(ellPts(x, y, rx, ry, 26, rx * .03), { wash: GLOW, washOp: 45 * k, fill: GLOW, fillOp: 60 * k, bleed: .2, tex: .3, border: .3, ink: null });
+  softGlow(x, y, rx * 1.25, ry * 1.25, GLOW, 110 * k);
   const r0 = Math.min(rx, ry) * .25;
   for (let i = 0; i < 2; i++) {
     const a0 = -Math.PI * .75, a1 = -Math.PI * .25, R = r0 * (1 + i * .7), cy = y - ry - r0 * .3, p = [];
@@ -40,7 +44,7 @@ function clawdIn(r, o = {}) {
   const u = Math.min(r.w / 13, r.h / 10.5) * (o.scale ?? 1) * backOut(clamp(k));
   const x = r.x + r.w * (o.fx ?? .5), y = r.y + r.h * (o.fy ?? .9);
   // screen light pooled behind Clawd
-  paint(ellPts(x, y - 4 * u, 7 * u, 5 * u, 20), { fill: GLOW, fillOp: 40, bleed: .3, ink: null });
+  softGlow(x, y - 4 * u, 7 * u, 5 * u, GLOW, 60, 3);
   clawd(x, y, u, { noShadow: true, ...o });
 }
 
@@ -51,7 +55,7 @@ function hopDot(a, b, p, lift = 220) {
   if (p <= 0 || p >= 1) return pt(clamp(p));
   const e = ease(p), [x, y] = pt(e);
   for (let i = 1; i <= 7; i++) { const q = e - i * .045; if (q <= 0) break; const [tx, ty] = pt(q); paint(ellPts(tx, ty, 9 - i, 9 - i, 8), { wash: GLOW, washOp: 200 - i * 24, ink: null }); }
-  paint(ellPts(x, y, 46, 46, 18), { fill: GLOW, fillOp: 90, bleed: .3, ink: null });
+  softGlow(x, y, 50, 50, GLOW, 140, 3);
   paint(ellPts(x, y, 15, 15, 12), { wash: '#FFE3C8', ink: GLOW, sw: .8 });
   return [x, y];
 }
@@ -100,7 +104,7 @@ function lamp(x, y, s, o = {}) {
   const on = o.on ?? 0, col = o.col || '#FFE6A8';
   if (on > .02) {
     paint([[x - s * .3, y], [x + s * .3, y], [x + s * 2.6 * (1 + on * .4), GY + 40], [x - s * 2.6 * (1 + on * .4), GY + 40]], { wash: col, washOp: 60 * on, fill: col, fillOp: 70 * on, bleed: .25, tex: .2, border: .1, ink: null });
-    paint(ellPts(x, y + s * .1, s * 1.2 * (1 + on), s * .9 * (1 + on), 22), { wash: col, washOp: 110 * on, fill: col, fillOp: 110 * on, bleed: .3, ink: null });
+    softGlow(x, y + s * .1, s * 1.6 * (1 + on), s * 1.2 * (1 + on), col, 200 * on);
   }
   inkLine([[x, -40], [x, y - s * .5]], .9, PAL.ink, 'ink', 0);
   paint([[x - s * .2, y - s * .55], [x + s * .2, y - s * .55], [x + s * .7, y], [x - s * .7, y]], { wash: o.shade || '#3C6E71', ink: PAL.ink, sw: .9 });
@@ -393,7 +397,7 @@ function bookCard(t, lt, dur, kind, title, o = {}) {
   const u = r.h / 26, cx = r.x + r.w * .86, gy = r.y + r.h * .93;
   const extra = o.react ? o.react(lt) : {};
   const nod = Math.max(0, Math.sin(seg(lt, .7, 1.3) * Math.PI * 2)) * .3;
-  paint(ellPts(cx, gy - 4 * u, 7 * u, 5 * u, 20), { fill: GLOW, fillOp: 40, bleed: .3, ink: null });
+  softGlow(cx, gy - 4 * u, 7 * u, 5 * u, GLOW, 60, 3);
   clawd(cx, gy, u, { noShadow: true, eyes: 'look', lookX: -1, lookY: .3, mouth: 'o', aL: .5, aR: -.2, dy: -nod, draw: pixelGlasses(1), ...extra });
   camEnd();
 }
